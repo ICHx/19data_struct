@@ -25,8 +25,15 @@ STACK_DATA pop(stack);
 
 bool isEmpty(stack);
 
+int is_operator(char);
+
 short weight(char);
 
+bool validate(const char *);
+
+short InfixConv(char *, char *);
+
+short evaluate(const char *, float *);
 
 stack newStack() {
 	stack stack0;
@@ -43,25 +50,11 @@ stack newStack() {
 
 void push(stack stack0, STACK_DATA c0) {
 	stack stack1 = newStack();
-	if ((stack1 != NULL) {
+	if (stack1 != NULL) {
 		stack1->data = c0;
 		stack1->next = stack0->next;
 		stack0->next = stack1;
 	}
-}
-
-bool isEmpty(stack s) { return s->next == NULL; }
-
-int is_operator(char symbol) {
-	if (symbol == '*' || symbol == '/' || symbol == '+' || symbol == '-')
-		return 1;
-	else return 0;
-}
-
-short weight(char symbol) {
-	if (symbol == '*' || symbol == '/') return 2;
-	else if (symbol == '+' || symbol == '-') return 1;
-	else return 0;
 }
 
 STACK_DATA pop(stack stack0) {
@@ -82,18 +75,60 @@ STACK_DATA pop(stack stack0) {
 	}
 }
 
-int InfixConv(char infix[], char postfix[]) {
+bool isEmpty(stack s) { return s->next == NULL; }
+
+int is_operator(char symbol) {
+	if (symbol == '*' || symbol == '/' || symbol == '+' || symbol == '-')
+		return 1;
+	else return 0;
+}
+
+short weight(char symbol) {
+	if (symbol == '*' || symbol == '/') return 2;
+	else if (symbol == '+' || symbol == '-') return 1;
+	else return 0;
+}
+
+bool validate(const char infix[]) {
+	typedef char STACK_DATA;
+	short i = 0;
+	char item;
+	stack stack_v = newStack();
+
+	while ((item = infix[i++]) != '\0') {
+		if (item == '(') push(stack_v, item);
+
+		else if (isdigit(item) || is_operator(item));
+
+		else if (item == ')') {
+			if (isEmpty(stack_v))
+				return 0; //when ) > (
+			else pop(stack_v);
+
+		}
+	}
+
+	if (isEmpty(stack_v)) return 1;
+	else return 0; // when ( > )
+}
+
+short InfixConv(char infix[], char postfix[]) {
 	typedef char STACK_DATA;
 	short i = 0, j = 0;
 	char item = infix[i];
 	char x;
 	stack stack0 = newStack();
 
+	if (!validate(infix)) {
+		puts("e: Unbalanced bracket");
+		return -1;
+	}
+
 	push(stack0, '(');                               /* push '(' onto stack */
 	strcat(infix, ")");                  /* add ')' to infix expression */
 
 	while (item != '\0') {
-		printf("\nCurrent Item %c %d\n", item, (int) item);
+		if (DEBUG)printf("\nCurrent Item %c %d\n", item, (int) item);
 		if (item == '(') push(stack0, item);
 
 		else if (isdigit(item))
@@ -117,7 +152,6 @@ int InfixConv(char infix[], char postfix[]) {
 
 		} else { //nothing match
 			puts("e: invalid symbol");
-			getchar();
 			return -1;
 		}
 		item = infix[++i]; //move to next char
@@ -125,7 +159,6 @@ int InfixConv(char infix[], char postfix[]) {
 
 	if (!isEmpty(stack0)) { //still non-empty stack?
 		puts("Unbalanced infix expression");
-		getchar();
 		return -1;
 	}
 
@@ -133,17 +166,13 @@ int InfixConv(char infix[], char postfix[]) {
 	return 1;
 }
 
-bool valid_bracket(char *infix) {
-//
-}
-
-float evaluate(char postfix[]) {
+short evaluate(const char postfix[], float *result) {
 	typedef float STACK_DATA;
 	short i = 0;
-	float val = 1, x1, x2;
+	float val, x1, x2;
 	stack stack3 = newStack();
 	int current;
-	char opr;
+	int opr;
 
 	while ((current = postfix[i++]) != '\0') {
 		if (isdigit(current)) {
@@ -176,47 +205,53 @@ float evaluate(char postfix[]) {
 			case '/':
 				if (x2 == 0) {
 					puts("\ne: divide zero");
-					return ('\0');
+					return (-1);
 				}
 				val /= x2;
 				break;
 
 			default:
 				puts("\ne: invalid Symbol");
-				return ('\0');
+				return (-1);
 		}
 		push(stack3, val);
 	}
-	return pop(stack3);
+	*result = pop(stack3);
+	return 1;
+
 }//end of function
-
-
-
 
 int main() {
 	char s0[100] = "(5+3)/5+7*(2+3)";
 	char s1[100]; // 53+5/1+ = 2.6 , 53+5/723+*+=36.6
-	float feedback;
-	while (1) {
+	short feedback;
+	float result;
+
+	char s3[50] = "((3*5)+(2+4))"; //valid
+	validate(s3) ? puts("Valid") : puts("Invalid");
+
+
+	while (s0[0] != 'x') {
 		puts(s0);
 		feedback = InfixConv(s0, s1);
 		if (feedback > 0) {
 			puts(s1);
 		} else {
-			puts("Try again!");
+			puts("Infix expression error. Try again!");
 			goto NEXT;
 		}//catch error
 
-		feedback = evaluate(s1);
-		if (feedback != '\0') printf("\nresult=%3.2f\n", feedback);
+		feedback = evaluate(s1, &result);
+		if (feedback > 0) printf("\nresult=%3.2f\n", result);
 
-		else puts("Try again!");
+		else puts("Postfix evaluation error. Try again!");
 
 
 		NEXT:
 		puts("press enter...");
-		getchar();
+		while (getchar() != '\n');
 
+		printf("\nPress 'x' to exit");
 		printf("\nPostfix_EXP>");
 		s0[0] = '\0';
 		gets(s0);
