@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define DEBUG 0
+#define DEBUG 1
 
 struct node;
 typedef struct node *node_ptr;
@@ -25,7 +25,7 @@ STACK_DATA pop(stack);
 
 bool isEmpty(stack);
 
-int is_operator(char);
+bool is_operator(char);
 
 short weight(char);
 
@@ -77,8 +77,14 @@ STACK_DATA pop(stack stack0) {
 
 bool isEmpty(stack s) { return s->next == NULL; }
 
-int is_operator(char symbol) {
+bool is_operator(char symbol) {
 	if (symbol == '*' || symbol == '/' || symbol == '+' || symbol == '-')
+		return 1;
+	else return 0;
+}
+
+bool is_plus(char symbol) {
+	if (symbol == '+' || symbol == '-')
 		return 1;
 	else return 0;
 }
@@ -130,8 +136,17 @@ short InfixConv(char infix[], char postfix[]) {
 		if (DEBUG)printf("\nCurrent Item %c %d\n", item, (int) item);
 		if (item == '(') push(stack0, item);
 
-		else if (isdigit(item))
-			postfix[j++] = item;
+		else if (isdigit(item)){
+		//postfix[j++]=' ';
+		do{
+		postfix[j++] = item;item=infix[++i];} 
+		while(isdigit(item));
+		
+		postfix[j++]=' ';
+		i--;
+		
+		
+}
 
 		else if (is_operator(item)) {
 			x = pop(stack0);
@@ -147,7 +162,7 @@ short InfixConv(char infix[], char postfix[]) {
 				postfix[j++] = x;
 				x = pop(stack0);
 			}
-			//x = pop(stack0);
+
 
 		} else { //nothing match
 			puts("e: invalid symbol");
@@ -166,22 +181,34 @@ short InfixConv(char infix[], char postfix[]) {
 }
 
 short evaluate(const char postfix[], float *result) {
-	short i = 0;
+	short i = 0,j=0;
 	float val, x1, x2;
 	stack stack3 = newStack();
+	char* currentS;
 	int current;
 	int opr;
 
 	while ((current = postfix[i++]) != '\0') {
+		if (current==' ') continue;
+		
 		if (isdigit(current)) {
-			current -= '0';
-			if (DEBUG) printf("\ncurrent=%d", current);
-
+		currentS=malloc(sizeof(char)*8);
+			while (isdigit(current)){
+			//current -= '0';
+			currentS[j++]=current;
+			current=postfix[i++];
+			
+			if (DEBUG) printf("\ncurrentS=%s", currentS);
+			}
+			
+			
+			sscanf(*currentS, "%d", &current); //similar to stoi()
 			push(stack3, current);
+			free(currentS);
 			continue;
 		}
 		//now assume is symbol
-
+	
 		x2 = pop(stack3);
 		x1 = pop(stack3);
 		val = x1;
@@ -207,7 +234,7 @@ short evaluate(const char postfix[], float *result) {
 				}
 				val /= x2;
 				break;
-
+				
 			default:
 				puts("\ne: invalid Symbol");
 				return (-1);
