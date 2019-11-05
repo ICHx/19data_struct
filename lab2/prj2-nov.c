@@ -198,9 +198,10 @@ short evaluate(const char postfix[], float *result) {
 			currentS[j++]=current;
 			current=postfix[i++];
 			
-			if (DEBUG) printf("\ncurrentS=%s", currentS);
+			//if (DEBUG) printf("\ncurrentS=%s", currentS);
 			}
 			currentS[j]='\0'; //end a string
+			if (DEBUG) printf("\ncurrentS=%s", currentS);
 			
 			
 			sscanf(currentS, "%d\n", &current); //similar to stoi()
