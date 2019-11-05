@@ -192,7 +192,7 @@ short evaluate(const char postfix[], float *result) {
 		if (current==' ') continue;
 		
 		if (isdigit(current)) {
-		currentS=malloc(sizeof(char)*8);
+		currentS=malloc(sizeof(char)*20);
 			while (isdigit(current)){
 			//current -= '0';
 			currentS[j++]=current;
@@ -200,11 +200,15 @@ short evaluate(const char postfix[], float *result) {
 			
 			if (DEBUG) printf("\ncurrentS=%s", currentS);
 			}
+			currentS[j]='\0'; //end a string
 			
 			
-			sscanf(*currentS, "%d", &current); //similar to stoi()
+			sscanf(currentS, "%d\n", &current); //similar to stoi()
+			if (DEBUG) printf("\ncurrent=%d", current);
+			
 			push(stack3, current);
 			free(currentS);
+			j=0;
 			continue;
 		}
 		//now assume is symbol
