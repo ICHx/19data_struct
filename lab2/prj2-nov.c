@@ -10,7 +10,7 @@ struct node;
 typedef struct node *node_ptr;
 typedef node_ptr stack;
 typedef float STACK_DATA; //using float to store both integer and float
-#define MAX 100
+#define MAX 200
 
 struct node {
     STACK_DATA data; // store single character
@@ -279,13 +279,13 @@ short evaluate(const char postfix[], float *result) {
 
 int main() {
     //char s0[200] = "(5+3)/5+7*(2+3)";
-    char s0[200] = "-1+-2++1";
-    char s1[200]; // 53+5/1+ = 2.6 , 53+5/723+*+=36.6
+    char s0[MAX] = "-1+-2++1";
+    char s1[MAX]; // 53+5/1+ = 2.6 , 53+5/723+*+=36.6
     short feedback;
     float result;
 
     if (DEBUG) {
-        char s3[50] = "-1+-3"; //invalid
+        char s3[50] = "(((-1))+-3)"; //invalid
         validate(s3) ? puts("Valid") : puts("Invalid");
     }
 
