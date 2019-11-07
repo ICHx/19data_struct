@@ -4,13 +4,20 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define DEBUG 1
+#define DEBUG 0
 
 struct node;
 typedef struct node *node_ptr;
 typedef node_ptr stack;
-typedef float STACK_DATA; //using float to store both integer and float
+typedef double STACK_DATA; //using float to store both integer and float
+typedef char STACK_CHAR; //using float to store both integer and float
 #define MAX 200
+
+struct nodec {
+    STACK_CHAR data; // store single character
+    node_ptr next; //actually is previous node
+};
+
 
 struct node {
     STACK_DATA data; // store single character
@@ -19,6 +26,7 @@ struct node {
 
 stack newStack();
 
+void pushc(stack, STACK_CHAR);
 void push(stack, STACK_DATA);
 
 STACK_DATA pop(stack);
@@ -54,6 +62,33 @@ void push(stack stack0, STACK_DATA c0) {
         stack1->data = c0;
         stack1->next = stack0->next;
         stack0->next = stack1;
+    }
+}
+
+void pushc(stack stack0, STACK_CHAR c0) {
+    stack stack1 = newStack();
+    if (stack1 != NULL) {
+        stack1->data = c0;
+        stack1->next = stack0->next;
+        stack0->next = stack1;
+    }
+}
+
+STACK_CHAR popc(stack stack0) {
+
+    node_ptr tosp;
+    if (isEmpty(stack0)) {
+        puts("\ne: Underflow");
+        exit(2);
+    } //signal error
+
+    else {
+        STACK_CHAR item;
+        tosp = stack0->next;
+        item = stack0->next->data;
+        stack0->next = stack0->next->next;
+        free(tosp);
+        return (item);
     }
 }
 
@@ -141,29 +176,25 @@ short InfixConv(char infix[], char postfix[]) {
             leading = 1;
         } else if (leading && is_plus(item)) {
             if (item == '-') {
+                postfix[j++] = ' ';
                 postfix[j++] = '0';
                 postfix[j++] = ' ';
-                //item = infix[++i];
-                //postfix[j++]=item;
 
-                // -1 + -1
-                while (isdigit(item)){            //get the string
+                item = infix[++i];                //get next element
+                while (isdigit(item)) {            //get the string
                     postfix[j++] = item;
                     item = infix[++i];
                 }
 
                 postfix[j++] = ' ';
                 postfix[j++] = '-';
-                postfix[j++] = ' ';
-                //i--;
-            }
-            item = infix[++i];
+            } else item = infix[++i];               //omit sign and move on if positive
+            postfix[j++] = ' ';
             leading = 0;
             continue;
 
         } else if (isdigit(item)) {
             leading = 0;
-            //postfix[j++]=' ';
             do {
                 postfix[j++] = item;
                 item = infix[++i];
@@ -182,13 +213,14 @@ short InfixConv(char infix[], char postfix[]) {
             }
             push(stack0, x); //the above loop terminate and popped the failed element
             push(stack0, item);
+
         } else if (item == ')') {
             x = pop(stack0);
             while (x != '(') { //break if ( or \0 is encountered
                 postfix[j++] = x;
                 x = pop(stack0);
             }
-
+            postfix[j++] = ' ';
 
         } else { //nothing match
             puts("e: invalid symbol");
@@ -278,21 +310,29 @@ short evaluate(const char postfix[], float *result) {
 }//end of function
 
 int main() {
-    //char s0[200] = "(5+3)/5+7*(2+3)";
-    char s0[MAX] = "-1+-2++1";
-    char s1[MAX]; // 53+5/1+ = 2.6 , 53+5/723+*+=36.6
+    char s0[MAX];
+    char s1[MAX];
     short feedback;
     float result;
 
     if (DEBUG) {
-        char s3[50] = "(((-1))+-3)"; //invalid
-        validate(s3) ? puts("Valid") : puts("Invalid");
+        strncpy(s0, "(+100-22)*-2--1", 99); //-155
+        validate(s0) ? puts("Valid") : puts("Invalid");
     }
 
 
     while (s0[0] != 'x') {
+
+        printf("\nPress 'x' to exit");
+
+        NEXT:
+        printf("\nPostfix_EXP>");
+
+        if (!DEBUG) gets(s0);
         puts(s0);
+
         feedback = InfixConv(s0, s1);
+
         if (feedback > 0) {
             puts(s1);
         } else {
@@ -306,14 +346,13 @@ int main() {
         else puts("Postfix evaluation error. Try again!");
 
 
-        NEXT:
+        puts("\n===========================");
         puts("press enter...");
         while (getchar() != '\n');
-
-        printf("\nPress 'x' to exit");
-        printf("\nPostfix_EXP>");
         s0[0] = '\0';
-        gets(s0);
+
+
+        if (DEBUG) break;
     }
 
     return 0;
