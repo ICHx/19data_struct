@@ -1,0 +1,3 @@
+C:/Users/ricts/Documents/GitHub/19dstruct-calc/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+C:/Users/ricts/Documents/GitHub/19dstruct-calc/cmake-build-debug/CMakeFiles/data_struct19.dir
+C:/Users/ricts/Documents/GitHub/19dstruct-calc/cmake-build-debug/CMakeFiles/edit_cache.dir
