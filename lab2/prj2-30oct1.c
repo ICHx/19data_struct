@@ -17,6 +17,12 @@ struct node {
 	node_ptr next; //actually is previous node
 };
 
+//typedef union STACKDATA STACK_DATA;
+//union STACKDATA {
+//	float fl;
+//	int inty;
+//};
+
 stack newStack();
 
 void push(stack, STACK_DATA);
