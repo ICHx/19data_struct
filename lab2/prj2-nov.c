@@ -165,10 +165,28 @@ bool validate(const char infix[]) {
 	else return 0; // when ( > )
 }
 
+char getDot(char *, char *, short *, short *);
+char getDot(char *input, char *output, short *a, short *b) {
+	short dot = 0, i = *a, j = *b;
+	char item = input[i];
+	do {
+		if (item == '.') dot++;
+		output[j++] = item;
+		item = input[++i];
+	} while (isdigit(item) || (item == '.'));
+	i--;
+	if (DEBUG) printf("dot=%d", dot);
+	*a = i;
+	*b = j;
+	return dot;
+}
+		
+
+
 short InfixConv(char infix[], char postfix[]) {
-	short i = 0, j = 0, dot;
+	short i = 0, j = 0;
 	char item = infix[i];
-	char x;
+	char x, dot = 0;
 	stack_c stack0 = newStack_c();
 	bool leading = 1; //used to determine leading sign
 	
@@ -190,40 +208,47 @@ short InfixConv(char infix[], char postfix[]) {
 			leading = 1;
 			
 		} else if (leading && is_plus(item)) {
+			leading = 0;
+			if (item == '+') {
+				item = infix[++i];     //only omit sign and move on if positive
+				continue;
+			}
 			if (item == '-') {
 				postfix[j++] = ' ';
 				postfix[j++] = '0';
 				postfix[j++] = ' ';
 				
-				item = infix[++i];                //get next element
-				while (isdigit(item)) {            //get the string
-					postfix[j++] = item;
-					item = infix[++i];
+				item = infix[++i];      //get next element
+				if (isdigit(item) || item == '.') {
+					dot = getDot(infix, postfix, &i, &j); //get the string
+					if (dot > 1) {
+						puts("\nToo many dots");
+						return -1;
+					}
+				} //now is bracket the hard stuff
+				else if (item == '(') {
+					pushc(stack0, '-');
+					continue;
+//					pushc(stack0, item);
+//					leading = 1;
 				}
 				
 				postfix[j++] = ' ';
 				postfix[j++] = '-';
-			} else item = infix[++i];               //omit sign and move on if positive
+				
+				item = infix[++i];     //move on
 			postfix[j++] = ' ';
-			leading = 0;
-			continue;
+				continue;
+			}
 			
 		} else if (isdigit(item) || item == '.') {
 			leading = 0;
-			do {
-				if (item == '.') dot++;
-				postfix[j++] = item;
-				item = infix[++i];
-			} while (isdigit(item) || (item == '.'));
-			
-			if (DEBUG) printf("dot=%d", dot);
+			dot = getDot(infix, postfix, &i, &j);
 			if (dot > 1) {
 				puts("\nToo many dots");
 				return -1;
 			}
-			
 			postfix[j++] = ' ';
-			i--;
 			
 		} else if (is_operator(item)) {
 			leading = 1;                          //the next operator encountered will be leading sign
