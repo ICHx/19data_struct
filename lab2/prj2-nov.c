@@ -23,6 +23,7 @@ void pushc(stack_c, STACK_CHAR);
 void push(stack, STACK_DATA);
 STACK_CHAR popc(stack_c);
 STACK_DATA pop(stack);
+bool isEmpty_c(stack_c);
 bool isEmpty(stack);
 bool is_operator(char);
 short weight(char);
@@ -87,7 +88,7 @@ void push(stack stack0, STACK_DATA float0) {
 STACK_CHAR popc(stack_c stack0) {
 	
 	node_c_ptr tosp;
-	if (isEmpty(stack0)) {
+	if (isEmpty_c(stack0)) {
 		puts("\ne: Underflow");
 		exit(2);
 	} //signal error
@@ -120,6 +121,7 @@ STACK_DATA pop(stack stack0) {
 	}
 }
 
+bool isEmpty_c(stack_c s) { return s->next == NULL; }
 bool isEmpty(stack s) { return s->next == NULL; }
 
 bool is_operator(char symbol) {
@@ -152,19 +154,19 @@ bool validate(const char infix[]) {
 		else if (isdigit(item) || is_operator(item));
 		
 		else if (item == ')') {
-			if (isEmpty(stack_v))
+			if (isEmpty_c(stack_v))
 				return 0; //when ) > (
 			else popc(stack_v);
 			
 		}
 	}
 	
-	if (isEmpty(stack_v)) return 1;
+	if (isEmpty_c(stack_v)) return 1;
 	else return 0; // when ( > )
 }
 
 short InfixConv(char infix[], char postfix[]) {
-	short i = 0, j = 0;
+	short i = 0, j = 0, dot;
 	char item = infix[i];
 	char x;
 	stack_c stack0 = newStack_c();
@@ -180,6 +182,8 @@ short InfixConv(char infix[], char postfix[]) {
 	
 	while (item != '\0') {
 		if (DEBUG) printf("\nCurrent Item %c %d\n", item, (int) item);
+		
+		dot = 0; //reset dot count, handle leading dot
 		
 		if (item == '(') {
 			pushc(stack0, item);
@@ -203,12 +207,18 @@ short InfixConv(char infix[], char postfix[]) {
 			leading = 0;
 			continue;
 			
-		} else if (isdigit(item)) {
+		} else if (isdigit(item) || item == '.') {
 			leading = 0;
 			do {
+				if (item == '.') dot++;
 				postfix[j++] = item;
 				item = infix[++i];
-			} while (isdigit(item));
+			} while (isdigit(item) || (item == '.'));
+			if (DEBUG) printf("dot=%d", dot);
+			if (dot > 1) {
+				puts("\nToo many dots");
+				return -1;
+			}
 			
 			postfix[j++] = ' ';
 			i--;
@@ -235,9 +245,10 @@ short InfixConv(char infix[], char postfix[]) {
 			return -1;
 		}
 		item = infix[++i]; //move to next char
+		
 	}           //end of while item!='\0'
 	
-	if (!isEmpty(stack0)) { //still non-empty stack?
+	if (!isEmpty_c(stack0)) { //still non-empty stack?
 		puts("Unbalanced infix expression");
 		return -1;
 	}
@@ -248,19 +259,19 @@ short InfixConv(char infix[], char postfix[]) {
 
 short evaluate(const char postfix[], double *result) {
 	short i = 0, j = 0;
-	double val, x1, x2;
 	stack stack3 = newStack();
-	char *currentS;
+	STACK_CHAR *currentS;
 	STACK_CHAR current_c;
+	STACK_DATA val, x1, x2;
 	STACK_DATA current;
 	int opr;
 	
 	while ((current_c = postfix[i++]) != '\0') {
 		if (current_c == ' ') continue;
 		
-		if (isdigit(current_c)) {
+		if (isdigit(current_c) || current_c == '.') {
 			currentS = malloc(sizeof(char) * 20);
-			while (isdigit(current_c)) {
+			while (isdigit(current_c) || current_c == '.') {
 				//current -= '0';
 				currentS[j++] = current_c;
 				current_c = postfix[i++];
@@ -347,7 +358,10 @@ int main() {
 	short feedback;
 	double result;
 	
-	printf("\nInfix to Postfix calculator\nSupported operators: + - * / ^ ( )\nSupported Number Range Input: 20 digits\nSupported Expression Length: %d char\n\n",
+	printf("\nInfix to Postfix calculator\n \
+		Supported operators: + - * / ^ ( )\n \
+		Supported Number Range Input: 20 digits\n \
+		Supported Expression Length: %d char\n\n",
 	       MAX - 3); //MAX - a pair of bracket - '\0'
 	
 	while (1) {
