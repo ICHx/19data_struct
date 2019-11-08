@@ -188,6 +188,7 @@ short InfixConv(char infix[], char postfix[]) {
 		if (item == '(') {
 			pushc(stack0, item);
 			leading = 1;
+			
 		} else if (leading && is_plus(item)) {
 			if (item == '-') {
 				postfix[j++] = ' ';
@@ -214,6 +215,7 @@ short InfixConv(char infix[], char postfix[]) {
 				postfix[j++] = item;
 				item = infix[++i];
 			} while (isdigit(item) || (item == '.'));
+			
 			if (DEBUG) printf("dot=%d", dot);
 			if (dot > 1) {
 				puts("\nToo many dots");
@@ -264,7 +266,7 @@ short evaluate(const char postfix[], double *result) {
 	STACK_CHAR current_c;
 	STACK_DATA val, x1, x2;
 	STACK_DATA current;
-	int opr;
+	char opr;
 	
 	while ((current_c = postfix[i++]) != '\0') {
 		if (current_c == ' ') continue;
@@ -290,7 +292,7 @@ short evaluate(const char postfix[], double *result) {
 			free(currentS);
 			j = 0;
 			continue;
-		} //end if is digit
+		} //    end of if digit section
 		
 		//now assume is symbol
 		x2 = pop(stack3);
