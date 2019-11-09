@@ -29,7 +29,7 @@ bool is_operator(char);
 char weight(char);
 bool validateBrackets(const char *infix);
 bool validateSymbols(const char *infix);
-short getDot(const char *, char *, short *, short *);
+short getDotStr(const char *, char *, short *, short *);
 char InfixConv(char *, char *);
 char evaluate(const char *, double *);
 
@@ -190,9 +190,8 @@ bool validateSymbols(const char *infix) {
 				after_ve = 1;
 				continue;
 			}    //after operand is viewed as a ve sign
-			else if (after_ve) return 0;   //if it is after an opr and a ve sign, its not normal
-//			else if (after_opr && after_ve) return 0;   //if it is after an opr and a ve sign, its not normal
-		
+			else if (after_ve) return 0;   //after an opr and a ve sign, its not normal
+
 		} else if (is_operator(item)) {   //now is ^ * /
 			if (after_opr) return 0; //if there are 2 operands, its not normal
 			after_opr = 1;
@@ -201,7 +200,7 @@ bool validateSymbols(const char *infix) {
 	return 1;
 }
 
-short getDot(const char *input, char *output, short *a, short *b) {
+short getDotStr(const char *input, char *output, short *a, short *b) {
 	short dot = 0, i = *a, j = *b;
 	char item = input[i];
 	do {
@@ -232,8 +231,8 @@ char InfixConv(char infix[], char postfix[]) {
 		return -1;
 	}
 	
-	pushc(stack0, '(');                   /* push '(' onto stack */
-	strcat(infix, ")");                  /* add ')' to infix expression */
+	pushc(stack0, '(');   // push '(' onto stack
+	strcat(infix, ")");   // add ')' to infix exp to close everything
 	
 	while (item != '\0') {
 		if (DEBUG) printf("\nCurrent Item %c %d\n", item, (int) item);
@@ -256,7 +255,7 @@ char InfixConv(char infix[], char postfix[]) {
 				
 				item = infix[++i];      //get next element
 				if (isdigit(item) || item == '.') {
-					dot = getDot(infix, postfix, &i, &j); //get the string
+					dot = getDotStr(infix, postfix, &i, &j);
 					if (dot > 1) {
 						puts("\ne: Too many dots");
 						return -1;
@@ -280,7 +279,7 @@ char InfixConv(char infix[], char postfix[]) {
 			
 		} else if (isdigit(item) || item == '.') {
 			leading = 0;
-			dot = getDot(infix, postfix, &i, &j);
+			dot = getDotStr(infix, postfix, &i, &j);
 			if (dot > 1) {
 				puts("\ne: Too many dots");
 				return -1;
@@ -432,22 +431,9 @@ int main() {
 		printf("\nPress 'x' to exit");
 		
 		NEXT:
-		printf("\nPostfix_EXP>");
+		printf("\nEnter Infix_EXP:\n");
 		
 		gets(s0);
-
-//		if (DEBUG) {
-//			strncpy(s0, "(+100-22)*-2--1", 99);
-////          -155
-//			strncpy(s0, "1*2*3*4*5*6*-7*8", 99);
-////          -4.032e+04
-//			strncpy(s0, "10000000000000000000*2-10^18", 99);
-////        number having 20 digits
-//			strncpy(s0, "10000000000000000000^3", 99);
-////          number having 20 digits, result=1e+57
-//
-//			validateBrackets(s0) ? puts("Valid") : puts("Invalid");
-//		}
 		
 		if (s0[0] == 'x') break;
 		puts(s0);
@@ -460,6 +446,7 @@ int main() {
 		feedback = InfixConv(s0, s1);
 		
 		if (feedback > 0) {
+			printf("\nPostfix_EXP:\n");
 			puts(s1);
 		} else {
 			puts("Infix expression error. Try again!");
