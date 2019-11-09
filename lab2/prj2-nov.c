@@ -26,19 +26,21 @@ STACK_DATA pop(stack);
 bool isEmpty_c(stack_c);
 bool isEmpty(stack);
 bool is_operator(char);
-short weight(char);
+char weight(char);
 bool validateBrackets(const char *infix);
+bool validateSymbols(const char *infix);
+short getDot(const char *, char *, short *, short *);
 char InfixConv(char *, char *);
 char evaluate(const char *, double *);
 
 struct node_c {
 	STACK_CHAR data; // store single character
-	node_c_ptr next; //actually is previous node
+	node_c_ptr next; // previous node
 };
 
 struct node {
-	STACK_DATA data; // store
-	node_ptr next; //actually is previous node
+	STACK_DATA data; // store double
+	node_ptr next; // previous node
 };
 
 stack_c newStack_c() {
@@ -50,7 +52,7 @@ stack_c newStack_c() {
 	}
 	stack0->data = '\0';
 	stack0->next = NULL;
-
+	
 	return stack0;
 }
 
@@ -63,7 +65,7 @@ stack newStack() {
 	}
 	stack0->data = '\0';
 	stack0->next = NULL;
-
+	
 	return stack0;
 }
 
@@ -136,7 +138,7 @@ bool is_plus(char symbol) {
 	else return 0;
 }
 
-short weight(char symbol) {
+char weight(char symbol) {
 	if (symbol == '*' || symbol == '/') return 2;
 	else if (symbol == '+' || symbol == '-') return 1;
 	else if (symbol == '^') return 3;
@@ -167,37 +169,39 @@ bool validateBrackets(const char *infix) {
 
 bool validateSymbols(const char *infix) {
 	short i = 0;
-	char item,count=0;
-	bool after_digit,after_plus,after_opr;
-
-	stack_c stack_v = newStack_c();
-
+	char item;
+	bool after_digit = 1, after_ve = 0, after_opr = 0;
+	
 	while ((item = infix[i++]) != '\0') {
-    while(!is_operator(item)) {
-        i++; after_digit=1;
-        after_plus=0;
-        after_opr=0;
-        continue;}
-
-        if(is_plus(item)){
-            after_plus=1;
-            count++;
-    }
-    else {   //now is ^ * /
-            after_opr=1;
-            count++;
-        }
-
-        after_digit=0;
-    }
-
-
-
+		if (isdigit(item) || item == '.') {
+			while (isdigit(item) || item == '.') { item = infix[i++]; }
+			i--; //compensate the while loop
+			after_digit = 1;
+			after_ve = 0; //after +/-ve sign
+			after_opr = 0;  //after ordinary operators
+		} else if (is_plus(item)) {
+			if (after_digit) {
+				after_opr = 1;
+				after_digit = 0;
+				continue;
+			} //after digit is an operand
+			
+			else if (after_opr && !after_ve) {
+				after_ve = 1;
+				continue;
+			}    //after operand is viewed as a ve sign
+			else if (after_ve) return 0;   //if it is after an opr and a ve sign, its not normal
+//			else if (after_opr && after_ve) return 0;   //if it is after an opr and a ve sign, its not normal
+		
+		} else if (is_operator(item)) {   //now is ^ * /
+			if (after_opr) return 0; //if there are 2 operands, its not normal
+			after_opr = 1;
+		}
+	}
 	return 1;
 }
 
-char getDot(char *, char *, short *, short *);
-char getDot(char *input, char *output, short *a, short *b) {
+short getDot(const char *input, char *output, short *a, short *b) {
 	short dot = 0, i = *a, j = *b;
 	char item = input[i];
 	do {
@@ -213,12 +217,12 @@ char getDot(char *input, char *output, short *a, short *b) {
 }
 
 char InfixConv(char infix[], char postfix[]) {
-	short i = 0, j = 0;
+	short i = 0, j = 0, dot = 0;
 	char item = infix[i];
-	char x, dot = 0;
+	char x;
 	stack_c stack0 = newStack_c();
 	bool leading = 1; //used to determine leading sign
-
+	
 	if (!validateBrackets(infix)) {
 		puts("e: Unbalanced bracket");
 		return -1;
@@ -227,13 +231,12 @@ char InfixConv(char infix[], char postfix[]) {
 		puts("e: Too many Operators");
 		return -1;
 	}
-
+	
 	pushc(stack0, '(');                   /* push '(' onto stack */
 	strcat(infix, ")");                  /* add ')' to infix expression */
-
+	
 	while (item != '\0') {
 		if (DEBUG) printf("\nCurrent Item %c %d\n", item, (int) item);
-		
 		dot = 0; //reset dot count, handle leading dot
 		
 		if (item == '(') {
@@ -262,10 +265,8 @@ char InfixConv(char infix[], char postfix[]) {
 				else if (item == '(') {
 					pushc(stack0, '-');
 					continue;
-//					pushc(stack0, item);
-//					leading = 1;
 				} else {
-					puts("\ne: Unbalanced Operands");
+					puts("\ne: Too many Operands(ve)");
 					return -1;
 				}
 				
@@ -273,7 +274,7 @@ char InfixConv(char infix[], char postfix[]) {
 				postfix[j++] = '-';
 				
 				item = infix[++i];     //move on
-			postfix[j++] = ' ';
+				postfix[j++] = ' ';
 				continue;
 			}
 			
