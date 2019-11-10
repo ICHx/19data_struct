@@ -177,8 +177,7 @@ bool validateBrackets(const char *infix) {
 		else if (item == ')') {
 			if (isEmpty_c(stack_v)) {
 				Destroy_c(stack_v);
-				return 0; /*when ) > (*/ }
-			else popc(stack_v);
+				return 0; /*when ) > (*/ } else popc(stack_v);
 		}
 	}
 	if (isEmpty_c(stack_v)) {
@@ -208,19 +207,24 @@ bool validateSymbols(const char *infix) {
 				after_digit = 0;
 				continue;
 			} //after digit is an operand
-			
 			else if (after_opr && !after_ve) {
 				after_ve = 1;
 				continue;
 			}    //after operand is viewed as a ve sign
 			else if (after_ve) return 0;   //after an opr and a ve sign, its not normal
-
+			
 		} else if (is_operator(item)) {   //now is ^ * /
 			if (after_opr) return 0; //if there are 2 operands, its not normal
 			after_opr = 1;
 			after_digit = 0;
+		} else if (item == '(') {
+			if (after_digit) {
+				after_opr = 1;
+				after_digit = 0;
+				continue;
+			}
 		}
-	}
+	} //end while
 	return (after_digit);
 }
 
@@ -430,7 +434,7 @@ char evaluate(const char postfix[], double *result) {
 			case '/':
 				if (x2 == 0) {
 					DIV_ZERO:
-					puts("\ne: divide zero");
+					puts("\ne: Div. zero");
 					Destroy(stack3);
 					return (-1);
 				}
@@ -438,15 +442,21 @@ char evaluate(const char postfix[], double *result) {
 				break;
 			
 			default:
-				puts("\ne: invalid Symbol");
+				puts("\ne: invalid Symbol(pf)");
 				Destroy(stack3);
 				return (-1);
 		}
 		push(stack3, val);
 	}
 	*result = pop(stack3);
-	Destroy(stack3);
-	return 1;
+	if (isEmpty(stack3)) {
+		Destroy(stack3);
+		return 1;
+	} else {
+		puts("e: Implicit multiplict'n not implemented.");
+		return -1;
+	}
+	
 	
 }//end of function
 
