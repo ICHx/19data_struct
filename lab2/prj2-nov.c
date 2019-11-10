@@ -192,7 +192,7 @@ bool validateBrackets(const char *infix) {
 bool validateSymbols(const char *infix) {
 	short i = 0;
 	char item;
-	bool after_digit = 1, after_ve = 0, after_opr = 0;
+	bool after_digit = 0, after_ve = 0, after_opr = 0;
 	
 	while ((item = infix[i++]) != '\0') {
 		if (isdigit(item) || item == '.') {
@@ -215,14 +215,17 @@ bool validateSymbols(const char *infix) {
 			
 		} else if (is_operator(item)) {   //now is ^ * /
 			if (after_opr) return 0; //if there are 2 operands, its not normal
+			if (!after_digit) return 0; //if there are 2 operands, its not normal
 			after_opr = 1;
 			after_digit = 0;
 		} else if (item == '(') {
 			if (after_digit) {
-				after_opr = 1;
+				puts("e: Implicit multiplication not implemented.");
+				return 0;
+			}
+			after_ve = 0;
 				after_digit = 0;
 				continue;
-			}
 		}
 	} //end while
 	return (after_digit);
@@ -240,6 +243,8 @@ short getDotStr(const char *input, char *output, short *a, short *b) {
 	if (DEBUG) printf("dot=%d", dot);
 	*a = i;
 	*b = j;
+	
+	if (strlen(&input[i]) == 2 && input[i] == '.') dot = 9; //too many dots for no number
 	return dot;
 }
 
@@ -255,7 +260,7 @@ char InfixConv(char infix[], char postfix[]) {
 		return -1;
 	}
 	if (!validateSymbols(infix)) {
-		puts("e: Too many Operators");
+		puts("e: More operators than no. required");
 		return -1;
 	}
 	
@@ -344,7 +349,7 @@ char InfixConv(char infix[], char postfix[]) {
 	}           //end of while item!='\0'
 	
 	if (!isEmpty_c(stack0)) { //still non-empty stack?
-		puts("Unbalanced infix expression");
+		puts("Unbalanced infix expression(nv)");
 		Destroy_c(stack0);
 		return -1;
 	}
@@ -411,7 +416,7 @@ char evaluate(const char postfix[], double *result) {
 			
 			case '^':
 				if ((int) x2 != x2) {
-					puts("\ne: non-integer power not implemented...");
+					puts("\ne: non-integer power not implemented.");
 					while (getchar() != '\n');
 					Destroy(stack3);
 					return -1;
@@ -442,7 +447,7 @@ char evaluate(const char postfix[], double *result) {
 				break;
 			
 			default:
-				puts("\ne: invalid Symbol(pf)");
+				puts("\ne: invalid Symbol(ev)");
 				Destroy(stack3);
 				return (-1);
 		}
@@ -453,7 +458,7 @@ char evaluate(const char postfix[], double *result) {
 		Destroy(stack3);
 		return 1;
 	} else {
-		puts("e: Implicit multiplict'n not implemented.");
+		puts("e: Implicit multiplication not implemented(ev).");
 		return -1;
 	}
 	
