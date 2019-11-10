@@ -19,6 +19,8 @@ typedef double STACK_DATA; //using double to store calculation
 
 stack_c newStack_c();
 stack newStack();
+void Destroy_c(stack_c);
+void Destroy(stack);
 void pushc(stack_c, STACK_CHAR);
 void push(stack, STACK_DATA);
 STACK_CHAR popc(stack_c);
@@ -37,7 +39,6 @@ struct node_c {
 	STACK_CHAR data; // store single character
 	node_c_ptr next; // previous node
 };
-
 struct node {
 	STACK_DATA data; // store double
 	node_ptr next; // previous node
@@ -55,7 +56,6 @@ stack_c newStack_c() {
 	
 	return stack0;
 }
-
 stack newStack() {
 	stack stack0;
 	stack0 = malloc(sizeof(struct node));
@@ -69,6 +69,29 @@ stack newStack() {
 	return stack0;
 }
 
+void Destroy_c(stack_c stack0) {
+	node_c_ptr ptr, tmp;
+	ptr = stack0;
+	
+	while (ptr->next != NULL) {
+		tmp = ptr->next;
+		ptr->next = tmp->next;
+		free(tmp);
+	}
+	free(ptr);
+}
+void Destroy(stack stack0) {
+	node_ptr ptr, tmp;
+	ptr = stack0;
+	
+	while (ptr->next != NULL) {
+		tmp = ptr->next;
+		ptr->next = tmp->next;
+		free(tmp);
+	}
+	free(ptr);
+}
+
 void pushc(stack_c stack0, STACK_CHAR c0) {
 	stack_c stack1 = newStack_c();
 	if (stack1 != NULL) {
@@ -77,7 +100,6 @@ void pushc(stack_c stack0, STACK_CHAR c0) {
 		stack0->next = stack1;
 	}
 }
-
 void push(stack stack0, STACK_DATA float0) {
 	stack stack1 = newStack();
 	if (stack1 != NULL) {
@@ -104,7 +126,6 @@ STACK_CHAR popc(stack_c stack0) {
 		return (item);
 	}
 }
-
 STACK_DATA pop(stack stack0) {
 	
 	node_ptr tosp;
@@ -131,13 +152,11 @@ bool is_operator(char symbol) {
 		return 1;
 	else return 0;
 }
-
 bool is_plus(char symbol) {
 	if (symbol == '+' || symbol == '-')
 		return 1;
 	else return 0;
 }
-
 char weight(char symbol) {
 	if (symbol == '*' || symbol == '/') return 2;
 	else if (symbol == '+' || symbol == '-') return 1;
@@ -156,15 +175,19 @@ bool validateBrackets(const char *infix) {
 		else if (isdigit(item) || is_operator(item));
 		
 		else if (item == ')') {
-			if (isEmpty_c(stack_v))
-				return 0; //when ) > (
+			if (isEmpty_c(stack_v)) {
+				Destroy_c(stack_v);
+				return 0; /*when ) > (*/ }
 			else popc(stack_v);
-			
 		}
 	}
-	
-	if (isEmpty_c(stack_v)) return 1;
-	else return 0; // when ( > )
+	if (isEmpty_c(stack_v)) {
+		Destroy_c(stack_v);
+		return 1;
+	} else {
+		Destroy_c(stack_v);
+		return 0;
+	} // when ( > )
 }
 
 bool validateSymbols(const char *infix) {
@@ -195,9 +218,10 @@ bool validateSymbols(const char *infix) {
 		} else if (is_operator(item)) {   //now is ^ * /
 			if (after_opr) return 0; //if there are 2 operands, its not normal
 			after_opr = 1;
+			after_digit = 0;
 		}
 	}
-	return 1;
+	return (after_digit);
 }
 
 short getDotStr(const char *input, char *output, short *a, short *b) {
@@ -220,7 +244,7 @@ char InfixConv(char infix[], char postfix[]) {
 	char item = infix[i];
 	char x;
 	stack_c stack0 = newStack_c();
-	bool leading = 1; //used to determine leading sign
+	bool leading = 1; //determine if symbol is leading a no. (leading sign)
 	
 	if (!validateBrackets(infix)) {
 		puts("e: Unbalanced bracket");
@@ -258,6 +282,7 @@ char InfixConv(char infix[], char postfix[]) {
 					dot = getDotStr(infix, postfix, &i, &j);
 					if (dot > 1) {
 						puts("\ne: Too many dots");
+						Destroy_c(stack0);
 						return -1;
 					}
 				} //now is bracket the hard stuff
@@ -266,6 +291,7 @@ char InfixConv(char infix[], char postfix[]) {
 					continue;
 				} else {
 					puts("\ne: Too many Operands(ve)");
+					Destroy_c(stack0);
 					return -1;
 				}
 				
@@ -282,6 +308,7 @@ char InfixConv(char infix[], char postfix[]) {
 			dot = getDotStr(infix, postfix, &i, &j);
 			if (dot > 1) {
 				puts("\ne: Too many dots");
+				Destroy_c(stack0);
 				return -1;
 			}
 			postfix[j++] = ' ';
@@ -305,6 +332,7 @@ char InfixConv(char infix[], char postfix[]) {
 			
 		} else { //nothing match
 			puts("e: invalid symbol");
+			Destroy_c(stack0);
 			return -1;
 		}
 		item = infix[++i]; //move to next char
@@ -313,10 +341,12 @@ char InfixConv(char infix[], char postfix[]) {
 	
 	if (!isEmpty_c(stack0)) { //still non-empty stack?
 		puts("Unbalanced infix expression");
+		Destroy_c(stack0);
 		return -1;
 	}
 	
 	postfix[j] = '\0'; //end string
+	Destroy_c(stack0);
 	return 1;
 }
 
@@ -335,7 +365,7 @@ char evaluate(const char postfix[], double *result) {
 		if (isdigit(current_c) || current_c == '.') {
 			currentS = malloc(sizeof(char) * 20);
 			while (isdigit(current_c) || current_c == '.') {
-				//current -= '0';
+				//current -= '0'; //used for single digit, instead of sscanf
 				currentS[j++] = current_c;
 				current_c = postfix[i++];
 			}
@@ -343,6 +373,7 @@ char evaluate(const char postfix[], double *result) {
 			if (DEBUG) printf("\ncurrentS=%s", currentS);
 			if (strlen(currentS) > MAX_DIG) {
 				puts("\ne: Number Too Large.");
+				Destroy(stack3);
 				return -1;
 			}
 			
@@ -378,6 +409,7 @@ char evaluate(const char postfix[], double *result) {
 				if ((int) x2 != x2) {
 					puts("\ne: non-integer power not implemented...");
 					while (getchar() != '\n');
+					Destroy(stack3);
 					return -1;
 				}
 				if (x2 == 0) {
@@ -399,6 +431,7 @@ char evaluate(const char postfix[], double *result) {
 				if (x2 == 0) {
 					DIV_ZERO:
 					puts("\ne: divide zero");
+					Destroy(stack3);
 					return (-1);
 				}
 				val /= x2;
@@ -406,11 +439,13 @@ char evaluate(const char postfix[], double *result) {
 			
 			default:
 				puts("\ne: invalid Symbol");
+				Destroy(stack3);
 				return (-1);
 		}
 		push(stack3, val);
 	}
 	*result = pop(stack3);
+	Destroy(stack3);
 	return 1;
 	
 }//end of function
@@ -455,17 +490,14 @@ int main() {
 		
 		feedback = evaluate(s1, &result);
 		if (feedback > 0) printf("\nresult=%3g\n", result);
-		
 		else {
 			puts("Postfix evaluation error. Try again!");
 			goto NEXT;
 		}
-		
 		puts("\n===========================");
 		puts("press enter...");
 		s0[0] = '\0';
 		while (getchar() != '\n');
 	}
-	
 	return 0;
 }
