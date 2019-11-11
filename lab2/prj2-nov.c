@@ -477,11 +477,8 @@ int main() {
 		Supported Number Range Input: 20 digits\n \
 		Supported Expression Length: %d char\n\n",
 	       MAX - 3); //MAX - a pair of bracket - '\0'
-	
+	printf("\nPress 'x' to exit");
 	while (1) {
-		printf("\nPress 'x' to exit");
-		
-		NEXT:
 		printf("\nEnter Infix_EXP:\n");
 		
 		gets(s0);
@@ -491,7 +488,7 @@ int main() {
 		
 		if (strlen(s0) > MAX - 2) {
 			puts("\ne: String Too Large");
-			goto NEXT;
+			continue;
 		}
 		
 		feedback = InfixConv(s0, s1);
@@ -501,14 +498,14 @@ int main() {
 			puts(s1);
 		} else {
 			puts("Infix expression error. Try again!");
-			goto NEXT;
+			continue;
 		}//catch error
 		
 		feedback = evaluate(s1, &result);
 		if (feedback > 0) printf("\nresult=%3g\n", result);
 		else {
 			puts("Postfix evaluation error. Try again!");
-			goto NEXT;
+			continue;
 		}
 		puts("\n===========================");
 		puts("press enter...");
