@@ -6,7 +6,7 @@
 
 #define MAX 503
 #define MAX_DIG 20
-#define DEBUG 0
+#define DEBUG 1
 
 struct node_c;
 struct node;
@@ -232,19 +232,20 @@ bool validateSymbols(const char *infix) {
 }
 
 short getDotStr(const char *input, char *output, short *a, short *b) {
-	short dot = 0, i = *a, j = *b;
+	short dot = 0, i = *a, j = *b, length = 0;
 	char item = input[i];
 	do {
 		if (item == '.') dot++;
 		output[j++] = item;
 		item = input[++i];
+		length++;
 	} while (isdigit(item) || (item == '.'));
 	i--;
-	if (DEBUG) printf("dot=%d", dot);
+	if (DEBUG) printf("dot=%d, len=%d", dot, length);
 	*a = i;
 	*b = j;
 	
-	if (strlen(&input[i]) == 2 && input[i] == '.') dot = 9; //too many dots for no number
+	if (length == 1 && input[i] == '.') dot = 9; //'.' a dot for no number
 	return dot;
 }
 
