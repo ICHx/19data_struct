@@ -15,15 +15,12 @@
 
 typedef struct node {
 	char data;
-	struct node *lchild, *rchild;
+    char visited; // 0=none, 1=left, 2=right
+    struct node *lchild, *rchild;
 } BinTNode;    //define the data type of the node
-
 typedef BinTNode *BinTree;
-typedef struct node *node_ptr;
 
-enum visited {
-	none = 0b0, left = 0b10, both = 0b11
-};
+typedef struct node *node_ptr;
 
 BinTree newNode();
 BinTree newNode() {
@@ -37,7 +34,7 @@ BinTree newNode() {
 	}
 	L->lchild = NULL;
 	L->rchild = NULL;
-	enum visited;
+	visited=0;
 	return L;
 }
 
