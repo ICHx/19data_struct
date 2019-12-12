@@ -5,81 +5,112 @@
 #include <stdlib.h>
 #include "prj3.h"
 
-BinTree CreatBinTree(void) {
-    BinTree T;
-    char ch;
-    if ((ch = getchar()) == '*')
-        return (NULL);       /*input is ‘*’，return null vector*/
-    else {
-        T = (BinTNode *) malloc(sizeof(BinTNode)); /*create a node*/
-        T->data = ch;
-        T->lchild = CreatBinTree();        /*create the left subtree*/
-        T->rchild = CreatBinTree();        /*create the right subtree*/
-        return (T);
-    }
-}
-
+int xHeight = 0;
+BinTree CreatBinTree2(char *);
+void BFS(BinTree, int);
+void RecordHeight(int record);
 
 BinTree CreatBinTree2(char *string1) {
-    int length = (int) strlen(string1);
-    char ch = 0;
-    BinTree T = newNode();
+	int length = (int) strlen(string1);
+	if (length > SIZE) {
+		puts("E: Exceeds vertex limits.\n");
+		exit(-1);
+	}
+	char ch = 0;
+	BinTree T = newNode();
+	
+	node_ptr current_ptr = T; //root node
+	node_ptr parent_ptr = T;
+	node_ptr new_ptr;
+	
+	ch = string1[0];
+	parent_ptr->data = ch;
+//	push(parent_ptr);
+	
+	for (int i = 1; i < length; i++) {
+		
+		ch = string1[i];
+		if (ch == '*') { //if null, do not go deeper
 
-    node_ptr current_ptr = T; //root node
-    node_ptr parent_ptr = T;
-    node_ptr new_ptr;
-
-    parent_ptr->data = ch;
-    push(parent_ptr);
-
-
-    for (int i = 0; i < length; i++) {
-        switch (current_ptr->visited) {
-            default: //case 0
-                parent_ptr = current_ptr;
-                push(parent_ptr);
-                current_ptr = current_ptr->lchild;
-                parent_ptr->visited = 1;
-                break;
-            case 1:
-                parent_ptr = current_ptr;
-                push(parent_ptr);
-                current_ptr = current_ptr->rchild;
-                parent_ptr->visited = 2;
-                break;
-            case 2:
-                while (current_ptr->visited != 2) {
-                    parent_ptr = pop();
-                    current_ptr = parent_ptr;  //backtrack until there
-                }
-                continue; //go to next loop
-        }
-
-        ch = string1[i];
-        if (ch != '*')
-
-
-        current_ptr = newNode(); /*create a node*/
-        current_ptr->data = ch;
-    }
-
-    return T;
+//			current_ptr = parent_ptr; //????
+			
+			switch (current_ptr->visited) { //not going deeper
+				case 0:
+					current_ptr->visited += 1;
+					break;
+				case 1:
+					current_ptr->visited = 2;
+					if (i != (length - 1)) {//dont backtrack anymore if is last
+						do {
+							parent_ptr = pop();
+							current_ptr = parent_ptr;  //backtrack until there
+						} while (current_ptr->visited == 2);
+					}
+					break;
+				case 2:
+					do {
+						parent_ptr = pop();
+						current_ptr = parent_ptr;  //backtrack until there
+					} while (current_ptr->visited == 2);
+					break;
+				default:
+					puts("Impossible?\n");
+			}
+			continue;
+		}
+		
+		if ((current_ptr->visited) != 2) {
+			new_ptr = newNode(); /*create a node*/
+			new_ptr->data = ch;
+		}
+		switch (current_ptr->visited) { //going deeper
+			case 2:
+				do {
+					parent_ptr = pop();
+					current_ptr = parent_ptr;  //backtrack until there
+				} while (current_ptr->visited == 2);
+				break;
+			case 0:
+				parent_ptr = current_ptr;
+				push(parent_ptr);
+				current_ptr->lchild = new_ptr;
+				current_ptr = current_ptr->lchild;
+				parent_ptr->visited = 1;
+				break;
+			case 1:
+				parent_ptr = current_ptr;
+				push(parent_ptr);
+				current_ptr->rchild = new_ptr;
+				current_ptr = current_ptr->rchild;
+				parent_ptr->visited = 2;
+				break;
+			default:
+				puts("Impossible?\n");
+//				goto SWITCH1; //redo switch
+		}
+	}
+	
+	return T;
+}
+void BFS(BinTree tree0, int depth) {
+	if (tree0 != NULL) {
+		RecordHeight(depth);
+		printf("tree entry: %c, at depth %d\n", tree0->data, depth);
+		BFS(tree0->lchild, depth + 1);
+		BFS(tree0->rchild, depth + 1);
+	} else return;
+}
+void RecordHeight(int record) {
+	if (record > xHeight) xHeight = record;
 }
 
-
-    {
-        T = newNode(); /*create a node*/
-        T->data = ch;
-        T->lchild = CreatBinTree();        /*create the left subtree*/
-        T->rchild = CreatBinTree();        /*create the right subtree*/
-        return (T);
-    }
-
-
 int main(int argc, char **argv) {
-    if (argc > 1) {
-        printf("string:%s\n", argv[1]);
-        CreatBinTree2(argv[1]);
-    }
-    return 0;
+	BinTree Tree;
+	if (argc > 1) {
+		printf("string:%s\n", argv[1]);
+		Tree = CreatBinTree2(argv[1]);
+		BFS(Tree, 0);
+		printf("Max Height:%d\n", xHeight);
+	} else puts("Please input string as argument\n");
+	return 0;
 }

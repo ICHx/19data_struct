@@ -15,8 +15,8 @@
 
 typedef struct node {
 	char data;
-    char visited; // 0=none, 1=left, 2=right
-    struct node *lchild, *rchild;
+	char visited; // 0=none, 1=left, 2=right
+	struct node *lchild, *rchild;
 } BinTNode;    //define the data type of the node
 typedef BinTNode *BinTree;
 
@@ -25,16 +25,14 @@ typedef struct node *node_ptr;
 BinTree newNode();
 BinTree newNode() {
 	BinTree L;
-//    L = (node_ptr) malloc(sizeof(struct node));
-	L = (BinTNode *) malloc(sizeof(BinTNode)); /*create a node*/
-	
+	L = (BinTNode *) malloc(sizeof(BinTNode));
 	if (L == NULL) {
 		puts("ERROR: OOM");
 		exit(-1);
 	}
 	L->lchild = NULL;
 	L->rchild = NULL;
-	visited=0;
+	L->visited = 0;
 	return L;
 }
 
@@ -45,7 +43,7 @@ int top = -1;
 
 void push(node_ptr item) {
 	if (top >= SIZE - 1) {
-		printf("\nStack Overflow.");
+		printf("\nE: Stack overflow.");
 	} else {
 		top = top + 1;
 		stack[top] = item;
@@ -57,7 +55,7 @@ node_ptr pop() {
 	node_ptr item;
 	
 	if (top < 0) {
-		printf("stack under flow: invalid infix expression");
+		printf("E: Stack under flow");
 		getchar();
 		/* underflow may occur for invalid expression */
 		/* where ( and ) are not matched */
@@ -68,3 +66,17 @@ node_ptr pop() {
 		return (item);
 	}
 }
+
+//BinTree CreatBinTree(void) {
+//	BinTree T;
+//	char ch;
+//	if ((ch = getchar()) == '*')
+//		return (NULL);       /*input is ‘*’，return null vector*/
+//	else {
+//		T = (BinTNode *) malloc(sizeof(BinTNode)); /*create a node*/
+//		T->data = ch;
+//		T->lchild = CreatBinTree();        /*create the left subtree*/
+//		T->rchild = CreatBinTree();        /*create the right subtree*/
+//		return (T);
+//	}
+//}
