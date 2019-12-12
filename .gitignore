@@ -54,5 +54,5 @@ Mkfile.old
 dkms.conf
 
 #clion stuff
-.idea/
-cmake-build-debug
+.idea/*
+cmake-build-debug/*
