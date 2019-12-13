@@ -94,8 +94,11 @@ BinTree CreatBinTree2(char *string1) {
 }
 void BFS(BinTree tree0, int depth) {
 	if (tree0 != NULL) {
+		if (depth == 0) printf("tree entry: %c, at depth %d\n", tree0->data, depth);
 		RecordHeight(depth);
-		printf("tree entry: %c, at depth %d\n", tree0->data, depth);
+		if (tree0->lchild != NULL)printf("tree entry: %c, at depth %d\n", tree0->lchild->data, depth + 1);
+		if (tree0->rchild != NULL)printf("tree entry: %c, at depth %d\n", tree0->rchild->data, depth + 1);
+		
 		BFS(tree0->lchild, depth + 1);
 		BFS(tree0->rchild, depth + 1);
 	} else return;

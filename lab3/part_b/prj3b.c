@@ -42,10 +42,8 @@ ALGraph *Create() {
 	return newGraph;
 }
 
-ALGraph *initGraph(int vexNum) {
-	ALGraph *newGraph = (ALGraph *) malloc(sizeof(struct graph));
+ALGraph *initGraph(ALGraph *newGraph, int vexNum) {
 	newGraph->vexNum = vexNum;
-	
 	int i;
 	for (i = 0; i < vexNum; ++i) {
 		newGraph->AdjList[i] = initNode(i);
@@ -117,10 +115,7 @@ void DFS(ALGraph *G, int v) {
 	RecursiveDiscover(G, v, visited); //start from
 	
 	for (int i = 0; i <= top; i++) {
-		
-		
 		item_last = pop();
-		
 		printf("\nnow v=%d", item_last);
 		for (int i = 0; i <= top; i++) {
 			printf("\nnow stack=%d", stack[i]);
@@ -137,9 +132,7 @@ void DFS(ALGraph *G, int v) {
 				push(item_last);
 				item_last = item_stacked;
 			}
-			
 		}
-		
 		*buffer_ptr++ = item_last;
 		
 		if (!visited[item_last]) {
@@ -151,7 +144,8 @@ void DFS(ALGraph *G, int v) {
 }
 
 int main() {
-	ALGraph *current_diagram = initGraph(6);
+	ALGraph *current_diagram = Create();
+	initGraph(current_diagram, 6);
 	test_case1(current_diagram);
 	//int v=FindNewVertexOfInDegreeZero();
 	//if (v==NotAVertex) exit(3);
