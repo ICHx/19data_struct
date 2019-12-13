@@ -4,7 +4,10 @@
 
 #ifndef DATASTRUCT_PRJ3B_H
 #define DATASTRUCT_PRJ3B_H
-
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include <stdbool.h>
 #endif //DATASTRUCT_PRJ3B_H
 
 /* declared here as global variable because stack[]
