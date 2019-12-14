@@ -11,9 +11,7 @@
 struct node;
 typedef struct node *node_ptr;
 typedef struct node {
-    int vertex; //the no. of the vertex
-    char known; //traversal record
-    char processed; //traversal record
+    char vertex; //the data. of the vertex
     int inDeg; //traversal record
     node_ptr link;
 } node;
@@ -21,18 +19,19 @@ typedef struct node {
 typedef struct graph {
     int vexNum; /* total number of nodes  (from 0 to max-1)*/
     node_ptr AdjList[MAX]; //the head nodes
+    char listOfVex[MAX];
 } AlGraph;
 
 //prototypes
-node_ptr initNode(int);
+node_ptr initNode(char);
 
 AlGraph Create(); //a
-void initGraph(AlGraph *newGraph, int vexNum);
+void initGraph(AlGraph *newGraph, int vexNum, char *data);
 
-void InsertVertex(AlGraph *graph, int); //b
-void InsertEdge(AlGraph *graph, int src, int dest); //c
-void DeleteVertex(AlGraph *graph, int vex); //d
-void DeleteEdge(AlGraph *g, int v1, int v2); //e
+void InsertVertex(AlGraph *graph, char vex); //b
+void InsertEdge(AlGraph *graph, char src, char dest); //c
+void DeleteVertex(AlGraph *graph, char vex); //d
+void DeleteEdge(AlGraph *g, char v1, char v2); //e
 bool IsEmpty(AlGraph *g); //f
 void Discover(AlGraph *graph, int v, int *visited);
 
@@ -46,15 +45,31 @@ AlGraph Create() {
     return newGraph;
 }
 
-void initGraph(AlGraph *newGraph, int vexNum) {
+void initGraph(AlGraph *newGraph, int vexNum, char data[]) {
     newGraph->vexNum = vexNum;
-    for (int i = 0; i < vexNum; ++i) {
-        newGraph->AdjList[i] = initNode(i);
-    }//headers
+    char ch;
+    int i;
+    for (i = 0; i < vexNum; ++i) {
+        ch = data[i];
+        newGraph->AdjList[i] = initNode(ch);
+        newGraph->listOfVex[i] = ch;
+    }
+    //headers
+
+    newGraph->listOfVex[i] = '\0';
+
 }
 
+int findVex(AlGraph *g, char vex) {
+    for (int i = 0; i < g->vexNum; i++) {
+        if (g->listOfVex[i] == vex) {
+            return i;
+        }
+    }
+    return -1; //not found or deleted
+}
 
-node_ptr initNode(int vex) {
+node_ptr initNode(char vex) {
     node_ptr newNode = (node_ptr) malloc(sizeof(struct node));
     newNode->vertex = vex; //the data
     newNode->link = NULL;
@@ -62,14 +77,19 @@ node_ptr initNode(int vex) {
     return newNode;
 }
 
-void InsertVertex(AlGraph* g, int v) { //insert a new node 'v' to graph
+void InsertVertex(AlGraph *g, char v) { //insert a new node 'v' to graph
     int current_vex_no = g->vexNum;
     g->vexNum++;
     g->AdjList[current_vex_no] = initNode(v);
-
+    g->listOfVex[current_vex_no] = v;
 }
 
-void InsertEdge(AlGraph *graph, int src, int dest) {
+void InsertEdge(AlGraph *graph, char src_v, char dest_v) {
+    int src = findVex(graph, src_v);
+    int dest = findVex(graph, dest_v);
+
+    if (src == dest) { puts("It's a loop"); }
+
     node_ptr newNode = initNode(dest);
     node_ptr src_path = graph->AdjList[src]; //start with header
 
@@ -80,25 +100,50 @@ void InsertEdge(AlGraph *graph, int src, int dest) {
     graph->AdjList[dest]->inDeg++;
 }
 
-void DeleteVertex(AlGraph *graph, int vex) {
-    int w;
-    node_ptr current_ptr = graph->AdjList[vex]->link;
-    node_ptr tmp_ptr;
+
+void DeleteVertex(AlGraph *graph, char vex_V) {
+    int vex = findVex(graph, vex_V);
+    int current_vex;
+    char w;
+    node_ptr current_ptr, tmp_ptr;
+
+
+    //empty in degree
+    for (int i = 0; i < graph->vexNum; i++) {
+        current_ptr = graph->AdjList[i]->link;
+        current_vex = graph->AdjList[i]->vertex;
+
+        while (current_ptr != NULL) {
+            if (current_ptr->vertex == current_vex) {
+                w = current_ptr->vertex;
+                printf("\nRemoving in-edge: v%c->v%c", vex_V, w);
+                graph->AdjList[w]->inDeg -= 1;
+                current_ptr = current_ptr->link;
+                tmp_ptr = current_ptr;
+                free(tmp_ptr);
+            }
+        }
+    }
+
+    //empty the adjacency list
+    current_ptr = graph->AdjList[vex]->link;
     while (current_ptr != NULL) {
         w = current_ptr->vertex;
-        printf("\nRemoving edge: v%d->v%d", vex, w);
+        printf("\nRemoving out-edge: v%d->v%d", vex, w);
         graph->AdjList[w]->inDeg -= 1;
-
 
         current_ptr = current_ptr->link;
         tmp_ptr = current_ptr;
         free(tmp_ptr);
     }
+
+
     puts("DeleteVertex done.");
 }
 
-AlGraph DeleteEdge(AlGraph g, int v1, int v2) {
+void DeleteEdge(AlGraph *g, char v1, char v2) {
     //something
+    return;
 }
 
 
@@ -157,27 +202,47 @@ void TopSort_DFS(AlGraph *G, int v) {
 }
 
 void test_case1(AlGraph *diagram_i) {
-    InsertEdge(diagram_i, 0, 1);
-    InsertEdge(diagram_i, 0, 3);
-    InsertEdge(diagram_i, 2, 1);
-    InsertEdge(diagram_i, 2, 5);
-    InsertEdge(diagram_i, 4, 0);
-    InsertEdge(diagram_i, 4, 1);
-    InsertEdge(diagram_i, 5, 4);
+
+    char sequence[6] = {'A', 'B', 'C', 'D', 'E', 'F'};
+    initGraph(diagram_i, 6, sequence);
+
+
+    InsertEdge(diagram_i, 'A', 'B');
+    InsertEdge(diagram_i, 'A', 'D');
+    InsertEdge(diagram_i, 'C', 'B');
+    InsertEdge(diagram_i, 'C', 'F');
+    InsertEdge(diagram_i, 'E', 'A');
+    InsertEdge(diagram_i, 'E', 'B');
+    InsertEdge(diagram_i, 'F', 'E');
+
+//insert an edge
+    InsertVertex(diagram_i, 'Z');
+//test add edge
+    InsertEdge(diagram_i, 'F', 'Z');
+//del a vertex
+    DeleteVertex(diagram_i, 'C');
+//del an edge
+    DeleteEdge(diagram_i,'F','E');
+
+
+
 }
 
 int main() {
     AlGraph current_diagram = Create();
     IsEmpty(&current_diagram) ? puts("Really empty\n") : puts("Impossible\n");
 
-    initGraph(&current_diagram, 6);
+
     test_case1(&current_diagram);
+
+
+
 
 
     //int v=FindNewVertexOfInDegreeZero();
     //if (v==NotAVertex) exit(3);
     int v = 2;
-    TopSort_DFS(&current_diagram, 2);
+    TopSort_DFS(&current_diagram, v);
     puts("\nFinished TopSorting..");
     for (int i = 0; i < current_diagram.vexNum; i++)
         printf("\nfinal buffer=%d", buffer[i]);
