@@ -13,7 +13,7 @@
 /* declared here as global variable because stack[]
 * is used by more than one fucntions */
 int stack[MAX];
-char buffer[MAX];
+int buffer[MAX];
 int top = -1;
 
 /* define push operation */

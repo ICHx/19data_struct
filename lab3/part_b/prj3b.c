@@ -2,16 +2,19 @@
 // Created by lenovo on 12/12/2019.
 //
 
-#define MAX 10 //max number of nodes
+#define MAX 20 //max number of nodes
+#define DEBUG 0
 
 #include "prj3b.h"
+
+#define NotAVertex (-1)
 
 //linked list def
 struct node;
 typedef struct node *node_ptr;
 typedef struct node {
 	char vertex; //the data. of the vertex
-	int inDeg; //traversal record
+	char inDeg; //traversal record
 	node_ptr link;
 } node;
 
@@ -27,7 +30,7 @@ typedef struct graph {
 node_ptr initNode(char);
 
 AlGraph Create(); //a
-void initGraph(AlGraph *newGraph, char vexNum, char *data);
+void initGraph(AlGraph *newGraph, char vexNum, const char *data);
 
 void InsertVertex(AlGraph *graph, char vex); //b
 void InsertEdge(AlGraph *graph, char src, char dest); //c
@@ -35,9 +38,9 @@ void DeleteVertex(AlGraph *graph, char vex); //d
 void DeleteEdge(AlGraph *graph, char src_v, char dest_v); //e
 void DeleteAllOutEdge(AlGraph *graph, char src_v, int src);
 bool IsEmpty(AlGraph *g); //f
-void Discover(AlGraph *graph, int v_index, int *visited);
-
-void TopSort_DFS(AlGraph *G, char v_index);
+void TopSort_Payload(AlGraph *graph, int v_index, int *visited);
+void TopSort_DFS(AlGraph *G);
+char FindNewVertexOfInDegreeZero(AlGraph *graph);
 
 //
 
@@ -48,7 +51,7 @@ AlGraph Create() {
 	return newGraph;
 }
 
-void initGraph(AlGraph *newGraph, char vexNum, char data[]) {
+void initGraph(AlGraph *newGraph, char vexNum, const char data[]) {
 	newGraph->vexNum = vexNum;
 	char ch;
 	int i;
@@ -197,69 +200,41 @@ void DeleteAllOutEdge(AlGraph *graph, char src_v, int src) {
 bool IsEmpty(AlGraph *g) {
 	int test = (g->vexNum) - (g->vexNumDeleted);
 	if (test == 0) return 1;
-	else printf("No, There are %d vertices.", test);
+	else printf("Not empty, There are %d vertices.", test);
 	return 0;
 }
 
-void Discover(AlGraph *graph, int v_index, int *visited) {
-	node_ptr current_ptr = graph->AdjList[v_index];
-	char w; //the data of vertex
-	int w_index;
+void TopSort_DFS(AlGraph *G) {
+	int visited[MAX] = {0};
 	
-	if (visited[v_index] == 0) {
-		push(v_index);
-		visited[v_index] = 1;
+	int test;
+	test = FindNewVertexOfInDegreeZero(G);
+	if (test == NotAVertex) {
+		puts("E: No element with 0 in-deg, loop exist");
+		exit(3);
 	}
-	//backtrack :going inside, then horizontal
-	while (current_ptr->link != NULL) {
-		current_ptr = current_ptr->link;
-		w = current_ptr->vertex;//going deeper
-		w_index = findVex(graph, w);
-		if (visited[w_index] == 0) {
-			push(w_index); //push for later discover
+	
+	for (int i = 0; i < G->vexNum; i++) {
+		if (!(visited[i]) && (G->listOfVex[i] != '\0')) { //skip deleted cells too
+			TopSort_Payload(G, i, visited);
 		}
 	}
-}
-
-void TopSort_DFS(AlGraph *G, char v_index) {
-	int visited[MAX] = {0};
-	int item_in_stack, current_item;
-	char *buffer_ptr = buffer;
-	*buffer_ptr++ = v_index;
-	Discover(G, v_index, visited); //start from
+	
+	//print result
+	int current_v;
+	puts("TopSorting..");
+	printf("Order=");
 	
 	while (top > -1) {
-		current_item = pop();
-		printf("\nnow v_index=%d", current_item);
-//        for (int j = 0; j <= top; j++) {
-//            printf("\nnow stack=%d", stack[j]);
-//        }
-		puts("\n====");
-		
-		if (top != -1) { //more than one in stack, compare
-			item_in_stack = stack[top];
-			
-			if ((G->AdjList[current_item]->inDeg > G->AdjList[item_in_stack]->inDeg)) {//exchange pos according to inDeg
-				pop();
-				push(current_item);
-				current_item = item_in_stack;
-			}
-		}
-		
-		if (!visited[current_item]) {
-			*buffer_ptr++ = current_item;
-			Discover(G, current_item, visited);
-		}
+		current_v = pop();
+		printf("%c", G->AdjList[current_v]->vertex);
 	}
-	top = -1; //reset stack
-	*buffer_ptr++ = -1; //mark end
 }
 
 void test_case1(AlGraph *diagram_i) {
-	
 	char sequence[6] = {'A', 'B', 'C', 'D', 'E', 'F'};
-	initGraph(diagram_i, 6, sequence);
 	
+	initGraph(diagram_i, 6, sequence);
 	
 	InsertEdge(diagram_i, 'A', 'B');
 	InsertEdge(diagram_i, 'A', 'D');
@@ -269,48 +244,116 @@ void test_case1(AlGraph *diagram_i) {
 	InsertEdge(diagram_i, 'E', 'B');
 	InsertEdge(diagram_i, 'F', 'E');
 	
-	
-	
-	//insert an edge
+	//insert a vex
+	puts("add vZ");
 	InsertVertex(diagram_i, 'Z');
 	IsEmpty(diagram_i);
 	
 	//test add edge
+	puts("add F->Z");
 	InsertEdge(diagram_i, 'F', 'Z');
+	
+	//view sort
+	TopSort_DFS(diagram_i);
+	
 	//del an edge
-	DeleteEdge(diagram_i, 'F', 'Z');
+	puts("\ndel E->B");
+	puts("del E->A");
+	DeleteEdge(diagram_i, 'E', 'B');
+	DeleteEdge(diagram_i, 'E', 'A');
+	
+	//view sort again
+	TopSort_DFS(diagram_i);
 	
 	//del a vertex
+	puts("\ndel vZ");
 	DeleteVertex(diagram_i, 'Z');
 	IsEmpty(diagram_i);
 	
+	//view sort again
+	TopSort_DFS(diagram_i);
+}
+
+void input_case(AlGraph *g) {
+	char vertex_string[MAX * 2];
+	char edge_string[MAX * 10];
+	char vertex[MAX];
+	char count = 0;
 	
+	//get vertex - process string
+	char *token;
+	const char delimiter[2] = " ";
+	puts("\nPlease enter vertices separated by ONE space, only use alphabets!");
+	gets(vertex_string); //assumed correct format
+	token = strtok(vertex_string, delimiter);
+	while (token != NULL) {
+		vertex[count++] = *token;
+		token = strtok(NULL, delimiter);
+	}
+	vertex[count] = '\0'; //mark end of array sequence
+	initGraph(g, count, vertex);// vertex - inserting
+	
+	// edges
+	char current_c, a, b;
+	count = 0; //reset count
+	puts("\nPlease enter directional edges separated by ONE comma, end with zero."
+	     "\nlike AB,CD0 for A->B and C->D");
+	gets(edge_string);  //assume all entered vertices are valid
+	count = (char) strlen(edge_string);
+	if (edge_string[count - 1] != '0') {
+		puts("E: No end for input for edges");
+		exit(5);
+	}
+	
+	count = 0; //reset count
+	while ((current_c = edge_string[count++]) != '0') {
+		
+		while (current_c == ',')
+			current_c = edge_string[count++]; //skip comma
+		
+		a = current_c;
+		current_c = edge_string[count++];
+		b = current_c;
+		if ((a + b) < 190) { //either a or b is non-alphabet,probably some symbol is tucked here
+			puts("E: singular input for edge");
+			exit(6);
+		}
+		InsertEdge(g, a, b);
+		
+	}
+	
+	TopSort_DFS(g);
+}
+
+char FindNewVertexOfInDegreeZero(AlGraph *graph) {
+	char index, i;
+	for (i = 0; i < graph->vexNum; i++) {
+		index = graph->AdjList[i]->inDeg;
+		if (!index) return i; //index==0
+	}
+	return -1;
+}
+void TopSort_Payload(AlGraph *graph, int v_index, int *visited) {
+	visited[v_index] = 1;
+	char next_vex;
+	node_ptr current_ptr, tmp_ptr, prev_ptr;
+	
+	current_ptr = graph->AdjList[v_index]->link;
+	while (current_ptr != NULL) {
+		next_vex = findVex(graph, current_ptr->vertex);
+		if (!visited[next_vex])
+			TopSort_Payload(graph, next_vex, visited);
+		
+		current_ptr = current_ptr->link;
+	}
+	push(v_index);
 }
 
 int main() {
 	AlGraph current_diagram = Create();
 	IsEmpty(&current_diagram) ? puts("Really empty\n") : puts("Impossible\n");
-	
-	
+
 	test_case1(&current_diagram);
-	
-	
-	
-	
-	
-	//int v=FindNewVertexOfInDegreeZero();
-	//if (v==NotAVertex) exit(3);
-	int v = 2, current_v, real_vex_num;
-	TopSort_DFS(&current_diagram, v);
-	puts("\nFinished TopSorting..");
-	printf("\nOrder=");
-	
-	real_vex_num = current_diagram.vexNum - current_diagram.vexNumDeleted;
-	for (int i = 0; i < real_vex_num; i++)
-		if ((current_v = buffer[i]) >= 0)
-			
-			printf("%c", current_diagram.AdjList[current_v]->vertex);
-	//top sort
-	
+//	input_case(&current_diagram);
 	return 0;
 }
