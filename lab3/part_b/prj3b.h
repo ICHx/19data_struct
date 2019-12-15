@@ -10,13 +10,9 @@
 #include <stdbool.h>
 #endif //DATASTRUCT_PRJ3B_H
 
-/* declared here as global variable because stack[]
-* is used by more than one fucntions */
 int stack[MAX];
 int buffer[MAX];
 int top = -1;
-
-/* define push operation */
 
 void push(int item) {
 	if (top >= MAX - 1) {
@@ -27,15 +23,11 @@ void push(int item) {
 	}
 }
 
-/* define pop operation */
 int pop() {
 	int item;
-	
 	if (top < 0) {
 		printf("stack under flow: invalid infix expression");
 		getchar();
-		/* underflow may occur for invalid expression */
-		/* where ( and ) are not matched */
 		exit(1);
 	} else {
 		item = stack[top];

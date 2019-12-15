@@ -11,8 +11,6 @@
 
 #endif //DATASTRUCT_PRJ3_H
 
-#define SIZE 60
-
 typedef struct node {
 	char data;
 	char visited; // 0=none, 1=left, 2=right
@@ -35,12 +33,8 @@ BinTree newNode() {
 	L->visited = 0;
 	return L;
 }
-
 node_ptr stack[SIZE];
 int top = -1;
-
-/* define push operation */
-
 void push(node_ptr item) {
 	if (top >= SIZE - 1) {
 		printf("\nE: Stack overflow.");
@@ -49,16 +43,11 @@ void push(node_ptr item) {
 		stack[top] = item;
 	}
 }
-
-/* define pop operation */
 node_ptr pop() {
 	node_ptr item;
-	
 	if (top < 0) {
 		printf("E: Stack under flow");
 		getchar();
-		/* underflow may occur for invalid expression */
-		/* where ( and ) are not matched */
 		exit(1);
 	} else {
 		item = stack[top];
@@ -66,17 +55,3 @@ node_ptr pop() {
 		return (item);
 	}
 }
-
-//BinTree CreatBinTree(void) {
-//	BinTree T;
-//	char ch;
-//	if ((ch = getchar()) == '*')
-//		return (NULL);       /*input is ‘*’，return null vector*/
-//	else {
-//		T = (BinTNode *) malloc(sizeof(BinTNode)); /*create a node*/
-//		T->data = ch;
-//		T->lchild = CreatBinTree();        /*create the left subtree*/
-//		T->rchild = CreatBinTree();        /*create the right subtree*/
-//		return (T);
-//	}
-//}

@@ -3,7 +3,10 @@
 //
 #include <stdio.h>
 #include <stdlib.h>
+
+#define SIZE 60
 #include "prj3.h"
+
 
 int xHeight = 0;
 BinTree CreatBinTree2(char *);
@@ -103,17 +106,27 @@ void BFS(BinTree tree0, int depth) {
 		BFS(tree0->rchild, depth + 1);
 	} else return;
 }
+
+void Destroy(BinTree tree0) {//similar to BFS
+	if (tree0 == NULL) return;
+	Destroy(tree0->lchild);
+	Destroy(tree0->rchild);
+	free(tree0);
+}
+
 void RecordHeight(int record) {
 	if (record > xHeight) xHeight = record;
 }
 
 int main(int argc, char **argv) {
-	BinTree Tree;
+	BinTree Tree = NULL;
 	if (argc > 1) {
 		printf("string:%s\n", argv[1]);
 		Tree = CreatBinTree2(argv[1]);
 		BFS(Tree, 0);
 		printf("Max Height:%d\n", xHeight);
 	} else puts("Please input string as argument\n");
+	
+	Destroy(Tree);
 	return 0;
 }
