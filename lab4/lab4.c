@@ -37,7 +37,7 @@ int read_inputs_from_ip_if(int array[]) {
 	
 	input0 = fopen("input.txt", "r");
 	if (input0 == NULL) {
-		puts("e: File create failed.");
+		puts("e: File read failed.");
 		fclose(input0);
 		exit(2);
 	} //still NULL
