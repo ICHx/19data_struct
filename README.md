@@ -1,5 +1,5 @@
-# 19dstruct-calc
-Infix to Postfix calculator
+# 2019_data_struct
+1. Infix to Postfix calculator
 
 數據結構 簡單計算機
 題目要求：
@@ -10,3 +10,10 @@ Infix to Postfix calculator
 感想：
 把單位數計算改寫爲多位數需要比較多功夫，特別要檢查斷字。
 至於要支持小數點，這個只要加入一個比較簡單的函數就可以了。
+
+2. Graph and Binary Tree
+
+
+
+3. Sorting Lab
+這個沒什麽特別
