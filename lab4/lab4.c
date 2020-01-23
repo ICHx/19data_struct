@@ -1,13 +1,3 @@
-/*
-This example program sounds the bell when driver is on seat AND haven't closed the doors. Use the general framework and the function shells, replace the code inside  the control_action() function with your own code.
-
-Note: This code is designed to run in an infinite loop to mimic a real control system. 
-If you prefer to read the inputs from a file, modify the code appropriately to terminate the loop when all the inputs have been processed.
-
-run this file as : gcc filename.c -o executableName
-
-Created By WilliamHe(2018053277) & RTsui(2018058445)
-*/
 #include <stdio.h>  //This is useful to do i/o to test the code
 #include <stdlib.h> //exit()
 #include <time.h> //time count
@@ -37,14 +27,14 @@ int read_inputs_from_ip_if(int array[]) {
 	
 	input0 = fopen("input.txt", "r");
 	if (input0 == NULL) {
-		puts("e: File read failed.");
+		puts("e: File create failed.");
 		fclose(input0);
 		exit(2);
 	} //still NULL
 	
-	fgets(temp, StrMAX, input0);//10
+	fgets(temp, StrMAX, input0);//10 entries
 	fgets(temp, StrMAX, input0);//100
-	fgets(temp, StrMAX, input0);//10000
+	fgets(temp, StrMAX, input0);//10000 entries
 	
 	if (temp[0] == '\0') {
 		puts("E: file empty");
@@ -84,10 +74,10 @@ void write_output_to_op_if(int array[], int N) {
 
 void InsSort(int *array, int N) { // [column] insertion sort
 	int temp = 0, i, j;
-	for (i = 1; i < N; ++i) { // 0..9, the 10st element is automatically smallest
+	for (i = 1; i < N; ++i) {
 		temp = array[i];
 		for (j = i; j > 0 && array[j - 1] > temp; j--) {
-			// if j is within bounds and pass item is smaller than current
+			// if j is within bounds and pass item is smaller than current item from array
 			array[j] = array[j - 1];
 			array[j - 1] = temp;
 		}
